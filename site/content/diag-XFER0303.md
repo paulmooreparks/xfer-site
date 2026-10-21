@@ -1,0 +1,32 @@
+---
+title: "XFER0303: number out of range for the requested type (conversion, not parsing)"
+description: "Error: number out of range for the requested type (conversion, not parsing)."
+date: 2026-10-22T00:00:00
+lastModified: 2026-10-22T00:00:00
+lang: en-us
+---
+# XFER0303
+
+**Error.** Number out of range for the requested type (conversion, not parsing).
+
+## What it means
+
+A number is well formed, but the type it is being converted to cannot hold it exactly: an integer too large for the target, or a fraction that the target would turn into infinity or zero. The parser does not report this; a library reports it when a program asks for a value in a particular type, rather than wrapping, rounding to infinity or truncating.
+
+## An example
+
+```xfer
+{ port 70000 }
+```
+
+Read into a type whose `port` is a 16-bit unsigned integer, `70000` does not fit, and the mapper reports `XFER0303` at the value.
+
+## How to fix it
+
+Use a target type that holds the value (a 64-bit or arbitrary-precision integer, a decimal), or change the value. In a mapper, the member's type is the target.
+
+## In the specification
+
+Section 4.5, [Numbers](https://github.com/paulmooreparks/xferlang/blob/v1.0.0-draft.1/spec/xferlang.md#45-numbers), of the specification at `v1.0.0-draft.1`.
+
+[All diagnostic codes](/diag)

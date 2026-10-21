@@ -1,0 +1,12 @@
+{
+  "name": "xfer-site-tools",
+  "private": true,
+  "type": "module",
+  "description": "Scripts that build parts of site/ from the specification. Not published.",
+  "scripts": {
+    "diag": "node tools/diag-pages.mjs"
+  },
+  "devDependencies": {
+    "xferlang": "0.1.0-next.4"
+  }
+}

@@ -1,0 +1,32 @@
+---
+title: "XFER0804: two keys match one member"
+description: "Error: two keys match one member."
+date: 2026-10-22T00:00:00
+lastModified: 2026-10-22T00:00:00
+lang: en-us
+---
+# XFER0804
+
+**Error.** Two keys match one member.
+
+## What it means
+
+Two keys of one object match the same member, so the document is ambiguous and neither value is chosen. This happens under case-insensitive matching (`Name` and `name`) and when a key and one of its aliases both appear.
+
+## An example
+
+```xfer
+{ url "/a" link "/b" }
+```
+
+Read into a type whose `url` member also accepts the older key `link`, the second key is reported.
+
+## How to fix it
+
+Keep one of the two keys.
+
+## In the specification
+
+Section 9, [Parsing results and the lossless tree](https://github.com/paulmooreparks/xferlang/blob/v1.0.0-draft.1/spec/xferlang.md#9-parsing-results-and-the-lossless-tree), of the specification at `v1.0.0-draft.1`.
+
+[All diagnostic codes](/diag)

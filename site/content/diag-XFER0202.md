@@ -1,0 +1,45 @@
+---
+title: "XFER0202: `#` not followed by `#` or `'`"
+description: "Error: `#` not followed by `#` or `'`."
+date: 2026-10-22T00:00:00
+lastModified: 2026-10-22T00:00:00
+lang: en-us
+---
+# XFER0202
+
+**Error.** `#` not followed by `#` or `"`.
+
+## What it means
+
+A `#` begins only the hash form of a string, a run of `#` followed by `"`. Here it is followed by something else.
+
+## An example
+
+From the conformance suite, `invalid/202-hash-not-followed-by-quote`:
+
+```xfer
+{ a #42 }
+```
+
+```
+$ xfer validate example.xfer
+example.xfer:1:5: error XFER0202: `#` not followed by `#` or `"`
+example.xfer:1:6: error XFER0407: token in key position is not an identifier or string: found 42
+example.xfer:1:6: error XFER0404: object body has a key without a value: a value is missing for "42"; the parser paired a=?, 42=?
+```
+
+## How to fix it
+
+If the `#` is text, put it in a string. If it opens a hash string, follow the run of `#` with `"`.
+
+## In the specification
+
+Section 4, [Lexical structure](https://github.com/paulmooreparks/xferlang/blob/v1.0.0-draft.1/spec/xferlang.md#4-lexical-structure), of the specification at `v1.0.0-draft.1`.
+
+## Conformance cases
+
+The suite's cases that expect XFER0202:
+
+- [`invalid/202-hash-not-followed-by-quote`](https://github.com/paulmooreparks/xferlang/blob/v1.0.0-draft.1/tests/invalid.txtar)
+
+[All diagnostic codes](/diag)

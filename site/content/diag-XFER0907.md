@@ -1,0 +1,48 @@
+---
+title: "XFER0907: JSON string holds a character XferLang cannot represent"
+description: "Error: JSON string holds a character XferLang cannot represent."
+date: 2026-10-22T00:00:00
+lastModified: 2026-10-22T00:00:00
+lang: en-us
+---
+# XFER0907
+
+**Error.** JSON string holds a character XferLang cannot represent.
+
+## What it means
+
+A JSON string or key holds a character XferLang cannot represent: a carriage return, which every XferLang document reads back as a line feed, or a lone surrogate, which is not a character at all. Converting it would change the value, so the converter refuses.
+
+## An example
+
+From the conformance suite, `from-json/827-carriage-return-escape`:
+
+```json
+["a\rb"]
+```
+
+```
+$ xfer from-json example.json
+example.json:1:2: error XFER0907: JSON string holds a character XferLang cannot represent: a string holds U+000D or a lone surrogate
+```
+
+## How to fix it
+
+Replace `\r` with `\n` in the JSON (or remove it), and replace any lone surrogate with the character it was meant to be part of.
+
+## In the specification
+
+Section 8.2, [JSON to XferLang](https://github.com/paulmooreparks/xferlang/blob/v1.0.0-draft.1/spec/xferlang.md#82-json-to-xferlang), of the specification at `v1.0.0-draft.1`.
+
+## Conformance cases
+
+The suite's cases that expect XFER0907:
+
+- [`from-json/827-carriage-return-escape`](https://github.com/paulmooreparks/xferlang/blob/v1.0.0-draft.1/tests/from-json.txtar)
+- [`from-json/827-carriage-return-in-a-key`](https://github.com/paulmooreparks/xferlang/blob/v1.0.0-draft.1/tests/from-json.txtar)
+- [`from-json/827-carriage-return-unicode-escape`](https://github.com/paulmooreparks/xferlang/blob/v1.0.0-draft.1/tests/from-json.txtar)
+- [`from-json/827-high-surrogate-then-text`](https://github.com/paulmooreparks/xferlang/blob/v1.0.0-draft.1/tests/from-json.txtar)
+- [`from-json/827-lone-high-surrogate`](https://github.com/paulmooreparks/xferlang/blob/v1.0.0-draft.1/tests/from-json.txtar)
+- [`from-json/827-lone-low-surrogate`](https://github.com/paulmooreparks/xferlang/blob/v1.0.0-draft.1/tests/from-json.txtar)
+
+[All diagnostic codes](/diag)

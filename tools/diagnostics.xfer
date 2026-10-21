@@ -1,0 +1,229 @@
+<! xfer 1 !>
+</ The hand-written part of the page for each diagnostic code (tools/diag-pages.mjs). The code's
+   severity and summary come from the specification's table, its example from the conformance
+   suite where the suite has one, and the diagnostic the example gets from xfer-js itself. Each
+   entry here gives the section of the specification the rule is in, what the diagnostic means,
+   and how to fix the document. An entry with an example of its own is for a code the suite
+   cannot show with a document of its own. />
+{
+    XFER0101 {
+        section "4"
+        meaning """A scalar token (a string, number, temporal, keyword or symbol) runs straight into the next token. Only whitespace, a comment, a bracket or the end of the document may follow a scalar, so the parser cannot tell where one ends and the next begins."""
+        fix """Put a space between the two tokens. Look for a key and a string written together (`title"x"`), two strings (`"a""b"` is one string, but `"a"1` is two tokens), or a number with something attached to it (`1-2`, `10px`)."""
+    }
+    XFER0102 {
+        section "4"
+        meaning """A `<` opens only two things: a comment, `</ ... />`, and an annotation, `<! ... !>`. Here it is followed by something else."""
+        fix """If the `<` is meant as text, put it inside a string. If it begins a comment or an annotation, add the `/` or `!` after it."""
+    }
+    XFER0103 {
+        section "4"
+        meaning """The character cannot begin any token. XferLang has no tuples, no `+` sign, no leading `.` on numbers, and no `~`, `?`, `(` or `)` outside strings."""
+        fix """Write the value in a form the language has: `0.5` for `.5`, `1` for `+1`, a sequence `[ ... ]` for a tuple, or a string for text."""
+    }
+    XFER0104 {
+        section "4.1"
+        meaning """A comment opened with `<` and a run of `/` never meets the closing run of exactly as many `/` followed by `>`. A run of a different length is content, so a comment opened with `<//` is not closed by `/>`."""
+        fix """Close the comment with the same number of slashes it opened with. To comment out a region that already has comments in it, open with one more slash than any comment inside it."""
+    }
+    XFER0105 {
+        section "4.3"
+        meaning """An identifier ends with `.`. A `.` is allowed inside an identifier (`v1.2.3`, `x.y`) but not at its end, because that would make a trailing full stop part of the name."""
+        fix """Remove the trailing `.`, or write the value as a string if the full stop is meant."""
+    }
+    XFER0201 {
+        section "4.4"
+        meaning """A string's opening delimiter is never matched. The closing delimiter is the first run of exactly as many quotes as the opening one (or, for the hash form, a quote followed by exactly as many `#`), and the document ends before it."""
+        fix """"Add the closing delimiter. If the content itself has quotes, check that the run you meant as the closer is the same length as the opener: in `"""say "hi" and more"""`, the runs of one quote are content. A string whose content holds a run of three quotes needs a delimiter of four, as this one does.""""
+    }
+    XFER0202 {
+        section "4"
+        meaning """A `#` begins only the hash form of a string, a run of `#` followed by `"`. Here it is followed by something else."""
+        fix """If the `#` is text, put it in a string. If it opens a hash string, follow the run of `#` with `"`."""
+    }
+    XFER0301 {
+        section "4.5"
+        meaning """A decimal integer other than zero begins with `0`. A leading zero would mean octal in some languages and decimal in others, so XferLang refuses it: `0755` is never 755 or 493."""
+        fix """Write `755` for the decimal value, or `0o755` for the octal one."""
+    }
+    XFER0302 {
+        section "4.5"
+        meaning """The token starts like a number but is not one: a trailing `.`, a `.` before an exponent, a doubled or trailing `_`, an uppercase radix prefix, a prefix with no digits, or a `-` with no number after it."""
+        fix """Write the number in one of the forms of section 4.5: `1.0` not `1.`, `1_000` not `1__000`, `0xff` not `0XFF`. Digit separators go between two digits only."""
+    }
+    XFER0303 {
+        section "4.5"
+        meaning """A number is well formed, but the type it is being converted to cannot hold it exactly: an integer too large for the target, or a fraction that the target would turn into infinity or zero. The parser does not report this; a library reports it when a program asks for a value in a particular type, rather than wrapping, rounding to infinity or truncating."""
+        fix """Use a target type that holds the value (a 64-bit or arbitrary-precision integer, a decimal), or change the value. In a mapper, the member's type is the target."""
+        example """{ port 70000 }"""
+        exampleNote """Read into a type whose `port` is a 16-bit unsigned integer, `70000` does not fit, and the mapper reports `XFER0303` at the value."""
+    }
+    XFER0304 {
+        section "4.6"
+        meaning """The token is shaped like a temporal but is not one of the three forms: a full date, a time with seconds, or a date-time. Reduced forms such as `09:30` or `2025-08`, a lowercase `t` or `z`, and a fraction point with no digits are not temporals."""
+        fix """Write the full form: `09:30:00`, `2025-08-01`, `2025-08-01T09:30:00Z`. If the value is not meant as a time at all, put it in a string."""
+    }
+    XFER0305 {
+        section "4.6"
+        meaning """The temporal is well formed but names no real date or time: a 13th month, a 30th of February, an hour of 24, an offset of `+24:00`."""
+        fix """Correct the field that is out of range. February has 29 days only in leap years, and second 60 is allowed, as a leap second."""
+    }
+    XFER0401 {
+        section "5.1"
+        meaning """The document holds whitespace and comments, or nothing at all, but no value. A document is exactly one element."""
+        fix """Add the value. An empty document is usually an empty object `{}` or an empty sequence `[]`."""
+    }
+    XFER0402 {
+        section "5.1"
+        meaning """Something other than whitespace or a comment follows the root element. A document holds one element, and several values side by side are not one document."""
+        fix """Wrap the values in a sequence `[ ... ]` or an object, or remove what follows the root. An annotation after the root is reported here too, because it has nothing after it to attach to."""
+    }
+    XFER0403 {
+        section "5.3"
+        meaning """Two pairs in one object have the same key. Keys compare by their characters, whether written bare or as a string, so `a` and `"a"` are the same key."""
+        fix """Rename one of them, or remove the one you do not want. If both values belong together, make the value a sequence."""
+    }
+    XFER0404 {
+        section "5.3"
+        meaning """The object body has an odd number of scalar tokens, so one key has no value. Because a bare word can be a key or a symbol value, one missing value shifts every pair after it; the message lists the pairs the parser inferred, so you can see where the shift began."""
+        fix """Find the first pair in the message whose key and value look swapped, and add the value that is missing just before it."""
+    }
+    XFER0405 {
+        section "5.4"
+        meaning """An object or sequence is opened and the document ends before it is closed."""
+        fix """Add the closing `}` or `]`. The diagnostic is at the bracket that was never closed."""
+    }
+    XFER0406 {
+        section "5.4"
+        meaning """A closing bracket has no open object or sequence to close, or closes the wrong kind (`]` for an open `{`)."""
+        fix """Remove the extra bracket, or change it to match the one it closes."""
+    }
+    XFER0407 {
+        section "5.3"
+        meaning """A key must be an identifier or a string. Here a number, a temporal, a keyword or a bracket is where a key should be. A key that spells a keyword, such as `true`, has to be written as a string."""
+        fix """Write the key as a string (`"true"`, `"2025"`), or, if a value has been left out before it, add the value."""
+    }
+    XFER0501 {
+        section "7"
+        meaning """An annotation's value is itself annotated. Annotations describe values; they do not nest."""
+        fix """Remove the inner annotation. If both describe the same target, write them one after the other before the target."""
+    }
+    XFER0502 {
+        section "7"
+        meaning """An annotation has nothing to attach to: it is the last thing in an object or a sequence, it sits between a key and its value, or the document has no element after it."""
+        fix """Move the annotation to just before the element or pair it describes."""
+    }
+    XFER0503 {
+        section "7"
+        meaning """`<! xfer 1 !>` gives the version of the specification the document was written for, and it must be the document's first token. Anywhere else, including after a comment, it is out of place."""
+        fix """Move the version annotation to the top of the document. Whitespace before it is fine; a comment is not, so put any comment after it."""
+    }
+    XFER0504 {
+        section "7"
+        meaning """The document says it was written for a major version of the specification this parser does not implement."""
+        fix """Write `<! xfer 1 !>`, or remove the annotation (a document without it is version 1). A document for a later major version needs a parser for that version."""
+    }
+    XFER0505 {
+        section "7"
+        meaning """Two targets in one document have the same `id` annotation. An `id` names one target and must be unique within its document."""
+        fix """Give one of them a different `id`. If you meant to group them, use `tag`, which may repeat."""
+    }
+    XFER0506 {
+        section "7"
+        meaning """The annotation is not one the specification defines (`xfer`, `id`, `tag` and `lang`), or it is malformed: no name, a name that is not an identifier, a body that is never closed with `!>` or is empty, or a value of the wrong kind for its name. The message says which. XferLang 1.0 has no processing instructions, so the annotations of the 0.x language are reported here."""
+        fix """Use one of the four annotations with the value it takes, close the annotation with `!>`, or remove it. Metadata the four do not cover belongs in the data itself, as an ordinary pair."""
+    }
+    XFER0601 {
+        section "3.4"
+        meaning """The document is larger than the parser's size limit. Every parser accepts documents up to 2^28 − 1 bytes, about 268 MB, by default, and a program that reads untrusted input may set a lower limit. A writer reports the same code when the text it would write is over the limit, which indentation can cause for a deeply nested value."""
+        fix """Split the data into several documents, or, if you control the parser and trust the input, raise its limit."""
+    }
+    XFER0602 {
+        section "3.4"
+        meaning """Objects and sequences are nested more deeply than the parser's limit allows. Every parser accepts at least 256 levels, counting the root. JSON nested past the limit is refused with the same code when it is converted."""
+        fix """Flatten the structure, or raise the limit if you control the parser and trust the input."""
+    }
+    XFER0603 {
+        section "3.4"
+        meaning """A single scalar token, usually a very long string, is longer than the parser's token limit. The default is 2^28 − 1 bytes; a program may set a lower one."""
+        fix """Store the text outside the document and refer to it, or raise the limit if you control the parser."""
+    }
+    XFER0604 {
+        section "3.4"
+        meaning """A delimiter run (the quotes or `#` around a string, or the slashes of a comment) is longer than the parser's limit, which is at least 64. The canonical writer chooses delimiters so that this happens only for content that has quote runs of every length up to the limit, which no ordinary document has."""
+        fix """Write the string with a shorter delimiter: one longer than the longest quote run in its content is enough, or use the hash form."""
+    }
+    XFER0605 {
+        section "3.4"
+        meaning """The document has more elements than the parser's element limit. The default is 2^31 − 1; a program reading untrusted input may set a much lower one."""
+        fix """Split the data into several documents, or raise the limit if you control the parser."""
+    }
+    XFER0701 {
+        section "3.1"
+        meaning """The document is not valid UTF-8. XferLang text is always UTF-8; a file saved in another encoding, or bytes cut in the middle of a character, are refused rather than guessed at."""
+        fix """Save the file as UTF-8. Most editors offer this in their save or encoding menu. A leading byte order mark is fine and is ignored."""
+    }
+    XFER0801 {
+        section "9"
+        meaning """An object mapper was asked to read a value into a type that cannot take that kind of value: a string where an integer is needed, a sequence where an object is needed. The parser does not report this; a library reports it when it maps a document onto a program's types."""
+        fix """Change the value to the kind the member expects, or change the member's type. The message says what was expected and what was found."""
+        example """{ port "8080" }"""
+        exampleNote """Read into a type whose `port` is an integer, the string `"8080"` is the wrong kind; write `port 8080`."""
+    }
+    XFER0802 {
+        section "9"
+        meaning """A key matches no member of the type being read, and the program has asked for unknown keys to be refused. By default mappers skip them."""
+        fix """Remove or rename the key, or add the member to the type."""
+        example """{ name "Ada" colour "blue" }"""
+        exampleNote """Read into a type with only a `name` member, with unknown keys refused, `colour` is reported at the key."""
+    }
+    XFER0803 {
+        section "9"
+        meaning """The type being read has a member it requires, and the object has no key for it."""
+        fix """Add the missing key. The message names the member and the key it expects."""
+        example """{ name "Ada" }"""
+        exampleNote """Read into a type that requires an `email` member, the object is reported where it opens."""
+    }
+    XFER0804 {
+        section "9"
+        meaning """Two keys of one object match the same member, so the document is ambiguous and neither value is chosen. This happens under case-insensitive matching (`Name` and `name`) and when a key and one of its aliases both appear."""
+        fix """Keep one of the two keys."""
+        example """{ url "/a" link "/b" }"""
+        exampleNote """Read into a type whose `url` member also accepts the older key `link`, the second key is reported."""
+    }
+    XFER0901 {
+        section "8.1"
+        meaning """An integer is outside the range a JSON reader that uses double-precision numbers can hold exactly, plus or minus 2^53. The JSON is still written with every digit, but a reader such as JavaScript's `JSON.parse` would round it. This is a warning, not an error."""
+        fix """Ask the converter to write such integers as strings (`xfer to-json --stringify-big-ints`), if the reader can treat them as text, or make sure the reader keeps big integers exactly."""
+    }
+    XFER0902 {
+        section "8.1"
+        meaning """`inf`, `-inf` and `nan` have no form in JSON. The converter writes `null` in their place, so the output is still JSON, and reports the loss as an error."""
+        fix """Decide what the JSON reader should get instead (a very large number, a string, `null`) and put that in the XferLang document, or accept `null`."""
+    }
+    XFER0903 {
+        section "8.1"
+        meaning """A symbol became a JSON string, because JSON has no symbols. Reading the JSON back gives a string, not a symbol. This is informational and is reported once per conversion, with a count."""
+        fix """Nothing needs fixing. If the value should be a string in both formats, write it as a string in XferLang too."""
+    }
+    XFER0904 {
+        section "8.1"
+        meaning """A date, time or date-time became a JSON string, because JSON has no temporal type. Reading the JSON back gives a string. This is informational and is reported once per conversion, with a count."""
+        fix """Nothing needs fixing; the JSON reader has to know which strings are dates."""
+    }
+    XFER0905 {
+        section "8.2"
+        meaning """The JSON object has the same key twice. JSON allows it and most readers keep the last value, so the converter does the same and warns, because an XferLang object may not have duplicate keys."""
+        fix """Remove the duplicate from the JSON, keeping the value you mean."""
+    }
+    XFER0906 {
+        section "8.2"
+        meaning """The JSON text is not well-formed JSON, so there is nothing to convert."""
+        fix """Correct the JSON at the position given. Trailing commas, comments, single quotes and unquoted keys are not JSON."""
+    }
+    XFER0907 {
+        section "8.2"
+        meaning """A JSON string or key holds a character XferLang cannot represent: a carriage return, which every XferLang document reads back as a line feed, or a lone surrogate, which is not a character at all. Converting it would change the value, so the converter refuses."""
+        fix """Replace `\r` with `\n` in the JSON (or remove it), and replace any lone surrogate with the character it was meant to be part of."""
+    }
+}

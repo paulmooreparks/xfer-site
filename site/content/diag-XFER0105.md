@@ -1,0 +1,44 @@
+---
+title: "XFER0105: identifier ends with `.`"
+description: "Error: identifier ends with `.`."
+date: 2026-10-22T00:00:00
+lastModified: 2026-10-22T00:00:00
+lang: en-us
+---
+# XFER0105
+
+**Error.** Identifier ends with `.`.
+
+## What it means
+
+An identifier ends with `.`. A `.` is allowed inside an identifier (`v1.2.3`, `x.y`) but not at its end, because that would make a trailing full stop part of the name.
+
+## An example
+
+From the conformance suite, `invalid/105-identifier-trailing-dot`:
+
+```xfer
+{ a. 1 }
+```
+
+```
+$ xfer validate example.xfer
+example.xfer:1:3: error XFER0105: identifier ends with `.`
+```
+
+## How to fix it
+
+Remove the trailing `.`, or write the value as a string if the full stop is meant.
+
+## In the specification
+
+Section 4.3, [Identifiers and symbols](https://github.com/paulmooreparks/xferlang/blob/v1.0.0-draft.1/spec/xferlang.md#43-identifiers-and-symbols), of the specification at `v1.0.0-draft.1`.
+
+## Conformance cases
+
+The suite's cases that expect XFER0105:
+
+- [`invalid/105-identifier-trailing-dot`](https://github.com/paulmooreparks/xferlang/blob/v1.0.0-draft.1/tests/invalid.txtar)
+- [`invalid/105-keyword-with-dot`](https://github.com/paulmooreparks/xferlang/blob/v1.0.0-draft.1/tests/invalid.txtar)
+
+[All diagnostic codes](/diag)

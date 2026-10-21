@@ -1,0 +1,44 @@
+---
+title: "XFER0602: nesting exceeds depth limit"
+description: "Error: nesting exceeds depth limit."
+date: 2026-10-22T00:00:00
+lastModified: 2026-10-22T00:00:00
+lang: en-us
+---
+# XFER0602
+
+**Error.** Nesting exceeds depth limit.
+
+## What it means
+
+Objects and sequences are nested more deeply than the parser's limit allows. Every parser accepts at least 256 levels, counting the root. JSON nested past the limit is refused with the same code when it is converted.
+
+## An example
+
+From the conformance suite, `from-json/828-nesting-past-the-depth-limit`:
+
+```json
+[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]
+```
+
+```
+$ xfer from-json example.json
+example.json:1:257: error XFER0602: nesting exceeds depth limit: nesting exceeds 256 levels
+```
+
+## How to fix it
+
+Flatten the structure, or raise the limit if you control the parser and trust the input.
+
+## In the specification
+
+Section 3.4, [Limits](https://github.com/paulmooreparks/xferlang/blob/v1.0.0-draft.1/spec/xferlang.md#34-limits), of the specification at `v1.0.0-draft.1`.
+
+## Conformance cases
+
+The suite's cases that expect XFER0602:
+
+- [`bytes/602-depth-257-at-minimum`](https://github.com/paulmooreparks/xferlang/blob/v1.0.0-draft.1/tests/bytes/602-depth-257-at-minimum.diag)
+- [`from-json/828-nesting-past-the-depth-limit`](https://github.com/paulmooreparks/xferlang/blob/v1.0.0-draft.1/tests/from-json.txtar)
+
+[All diagnostic codes](/diag)

@@ -1,0 +1,43 @@
+---
+title: "XFER0505: duplicate `id`"
+description: "Error: duplicate `id`."
+date: 2026-10-22T00:00:00
+lastModified: 2026-10-22T00:00:00
+lang: en-us
+---
+# XFER0505
+
+**Error.** Duplicate `id`.
+
+## What it means
+
+Two targets in one document have the same `id` annotation. An `id` names one target and must be unique within its document.
+
+## An example
+
+From the conformance suite, `invalid/505-duplicate-id`:
+
+```xfer
+[ <! id "x" !> 1 <! id "x" !> 2 ]
+```
+
+```
+$ xfer validate example.xfer
+example.xfer:1:18: error XFER0505: duplicate `id`: the id "x" is already used
+```
+
+## How to fix it
+
+Give one of them a different `id`. If you meant to group them, use `tag`, which may repeat.
+
+## In the specification
+
+Section 7, [Annotations (Level 1)](https://github.com/paulmooreparks/xferlang/blob/v1.0.0-draft.1/spec/xferlang.md#7-annotations-level-1), of the specification at `v1.0.0-draft.1`.
+
+## Conformance cases
+
+The suite's cases that expect XFER0505:
+
+- [`invalid/505-duplicate-id`](https://github.com/paulmooreparks/xferlang/blob/v1.0.0-draft.1/tests/invalid.txtar)
+
+[All diagnostic codes](/diag)

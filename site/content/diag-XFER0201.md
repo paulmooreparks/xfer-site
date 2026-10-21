@@ -1,0 +1,46 @@
+---
+title: "XFER0201: unterminated string"
+description: "Error: unterminated string."
+date: 2026-10-22T00:00:00
+lastModified: 2026-10-22T00:00:00
+lang: en-us
+---
+# XFER0201
+
+**Error.** Unterminated string.
+
+## What it means
+
+A string's opening delimiter is never matched. The closing delimiter is the first run of exactly as many quotes as the opening one (or, for the hash form, a quote followed by exactly as many `#`), and the document ends before it.
+
+## An example
+
+From the conformance suite, `invalid/201-stray-quote-is-unterminated`:
+
+```xfer
+"a""
+```
+
+```
+$ xfer validate example.xfer
+example.xfer:1:1: error XFER0201: unterminated string: opened with a run of 1 quote
+```
+
+## How to fix it
+
+Add the closing delimiter. If the content itself has quotes, check that the run you meant as the closer is the same length as the opener: in `"""say "hi" and more"""`, the runs of one quote are content. A string whose content holds a run of three quotes needs a delimiter of four, as this one does.
+
+## In the specification
+
+Section 4.4, [Strings](https://github.com/paulmooreparks/xferlang/blob/v1.0.0-draft.1/spec/xferlang.md#44-strings), of the specification at `v1.0.0-draft.1`.
+
+## Conformance cases
+
+The suite's cases that expect XFER0201:
+
+- [`invalid/201-four-quotes-unterminated`](https://github.com/paulmooreparks/xferlang/blob/v1.0.0-draft.1/tests/invalid.txtar)
+- [`invalid/201-hash-run-mismatch`](https://github.com/paulmooreparks/xferlang/blob/v1.0.0-draft.1/tests/invalid.txtar)
+- [`invalid/201-stray-quote-is-unterminated`](https://github.com/paulmooreparks/xferlang/blob/v1.0.0-draft.1/tests/invalid.txtar)
+- [`invalid/201-unterminated-string`](https://github.com/paulmooreparks/xferlang/blob/v1.0.0-draft.1/tests/invalid.txtar)
+
+[All diagnostic codes](/diag)

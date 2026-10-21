@@ -1,0 +1,32 @@
+---
+title: "XFER0803: required member missing"
+description: "Error: required member missing."
+date: 2026-10-22T00:00:00
+lastModified: 2026-10-22T00:00:00
+lang: en-us
+---
+# XFER0803
+
+**Error.** Required member missing.
+
+## What it means
+
+The type being read has a member it requires, and the object has no key for it.
+
+## An example
+
+```xfer
+{ name "Ada" }
+```
+
+Read into a type that requires an `email` member, the object is reported where it opens.
+
+## How to fix it
+
+Add the missing key. The message names the member and the key it expects.
+
+## In the specification
+
+Section 9, [Parsing results and the lossless tree](https://github.com/paulmooreparks/xferlang/blob/v1.0.0-draft.1/spec/xferlang.md#9-parsing-results-and-the-lossless-tree), of the specification at `v1.0.0-draft.1`.
+
+[All diagnostic codes](/diag)
