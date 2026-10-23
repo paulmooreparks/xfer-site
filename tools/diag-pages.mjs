@@ -188,6 +188,8 @@ function render(example, code) {
 const fence = (lang, text) => `\`\`\`${lang}\n${text.endsWith("\n") ? text : `${text}\n`}\`\`\``;
 const severityWord = { error: "Error", warning: "Warning", informational: "Informational" };
 
+const plain = (text) => text.replaceAll("`", "").replaceAll('"', "'");
+
 /** A code's address on the site, which the Editor's lint marks link to. */
 const pageUrl = (code) => `/page/diag/${code}`;
 
@@ -201,8 +203,10 @@ function page({ code, severity, summary }, order) {
   const shown = found.map((e) => ({ e, r: render(e, code) })).find((x) => x.r !== null);
   const parts = [
     "---",
-    `title: "${code}: ${summary.replaceAll('"', "'")}"`,
-    `description: "${severityWord[severity]}: ${summary.replaceAll('"', "'")}."`,
+    // Front matter is plain text wherever it shows (the contents, the window's title), so the
+    // summary's code spans lose their backticks there.
+    `title: "${code}: ${plain(summary)}"`,
+    `description: "${severityWord[severity]}: ${plain(summary)}."`,
     `order: ${order}`,
     `date: ${DATE}`,
     `lastModified: ${DATE}`,
@@ -218,7 +222,7 @@ function page({ code, severity, summary }, order) {
     "",
   ];
   if (shown) {
-    parts.push("## An example", "", `From the conformance suite, \`${shown.e.id}\`:`, "", fence(shown.r.lang, shown.r.input), "", fence("", `$ ${shown.r.command}\n${shown.r.output}`), "");
+    parts.push("## An example", "", `From the conformance suite, \`${shown.e.id}\`:`, "", fence(shown.r.lang, shown.r.input), "", fence("text", `$ ${shown.r.command}\n${shown.r.output}`), "");
   } else if (note.example !== undefined) {
     parts.push("## An example", "", fence("xfer", note.example), "", note.exampleNote ?? "", "");
   }
