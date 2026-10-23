@@ -1,0 +1,131 @@
+---
+title: "Grammar"
+description: "The XferLang grammar in ABNF"
+order: 13
+date: 2026-10-23T00:00:00
+lastModified: 2026-10-23T00:00:00
+lang: en-us
+---
+# Grammar
+
+The grammar of XferLang in ABNF (RFC 5234), from `spec/xferlang.abnf`. Where it and the prose disagree, the disagreement is a defect in both, and a conformance case decides between them.
+
+```abnf
+; XferLang 1.0, draft 1. RFC 5234 ABNF with RFC 7405 case-sensitive literals.
+;
+; The grammar has two layers. The lexical layer turns the normalized text into
+; tokens; the syntactic layer arranges tokens into a document. ABNF cannot
+; express three things this grammar depends on, and each is stated here as a
+; constraint beside the rule it governs:
+;
+;   C1  Run matching. A repetition string opened by n quotes closes at the
+;       first maximal run of exactly n quotes. A hash string opened by m hashes
+;       closes at the first quote followed by a maximal run of exactly m hashes.
+;       A comment opened by n slashes closes at the first maximal run of
+;       exactly n slashes that is followed by ">".
+;   C2  Separation. A scalar token must be followed by whitespace, a comment,
+;       a self-delimiting token, or end of input.
+;   C3  Identifiers are not keywords. A bare word that spells a keyword is the
+;       keyword in every position, including key position.
+;
+; Before lexing, the input is validated as UTF-8 (a leading U+FEFF is removed)
+; and every CR LF and every lone CR is replaced by LF.
+
+; ---------------------------------------------------------------- document
+
+document        = *ws [xfer-head *trivia] element *trivia
+                  ; a comment before the xfer head makes it an ordinary
+                  ; annotation (XFER0503); see spec 5.1 and 7
+xfer-head       = %s"<!" *trivia %s"xfer" 1*trivia dec-int *trivia %s"!>"
+                  ; dec-int is the major version; see spec 7
+
+element         = *(annotation *trivia) value
+value           = object / sequence / scalar
+scalar          = string / number / temporal / keyword / symbol
+
+object          = LBRACE *trivia *(pair *trivia) RBRACE
+pair            = *(annotation *trivia) key 1*trivia value
+                  ; whitespace between key and value may be omitted only when
+                  ; the value begins with a self-delimiting token (C2)
+key             = identifier / string
+
+sequence        = LBRACK *trivia *(element *trivia) RBRACK
+
+annotation      = %s"<!" *trivia identifier 1*trivia value *trivia %s"!>"
+                  ; the value is a Level 0 value and carries no annotations;
+                  ; whitespace between the name and the value may be omitted
+                  ; only when the value begins with a self-delimiting token (C2)
+
+; ---------------------------------------------------------------- trivia
+
+trivia          = ws / comment
+ws              = SP / HTAB / LF / %x0C
+comment         = "<" 1*"/" *comment-char 1*"/" ">"       ; C1
+comment-char    = <any scalar value>                      ; subject to C1
+
+; ---------------------------------------------------------------- tokens
+
+LBRACE          = "{"
+RBRACE          = "}"
+LBRACK          = "["
+RBRACK          = "]"
+; Self-delimiting tokens (C2): LBRACE RBRACE LBRACK RBRACK, the "<" that opens
+; a comment or annotation, and the "!>" that closes an annotation.
+
+; strings -------------------------------------------------------------------
+
+string          = empty-string / rep-string / hash-string
+empty-string    = 2DQUOTE                                  ; a maximal run of exactly
+                  ; two quotes is always the empty string, whatever follows
+rep-string      = rep-run *string-char rep-run              ; C1; see spec 4.4
+rep-run         = DQUOTE / 3*DQUOTE                         ; one, or three or more
+                  ; the opening run is maximal; the content may not begin or
+                  ; end with DQUOTE
+hash-string     = 1*"#" DQUOTE *string-char DQUOTE 1*"#"  ; C1; see spec 4.4
+string-char     = <any scalar value>                      ; subject to C1
+
+; numbers -------------------------------------------------------------------
+
+number          = fractional / integer
+integer         = ["-"] (dec-int / hex-int / oct-int / bin-int)
+dec-int         = "0" / (digit1-9 *(DIGIT / "_" DIGIT))
+hex-int         = %s"0x" HEXDIG *(HEXDIG / "_" HEXDIG)
+oct-int         = %s"0o" octdig *(octdig / "_" octdig)
+bin-int         = %s"0b" BIT *(BIT / "_" BIT)
+fractional      = (["-"] dec-int (frac [exp] / exp)) / special-float
+frac            = "." DIGIT *(DIGIT / "_" DIGIT)
+exp             = ("e" / "E") ["+" / "-"] DIGIT *(DIGIT / "_" DIGIT)
+special-float   = %s"inf" / %s"-inf" / %s"nan"
+digit1-9        = %x31-39
+octdig          = %x30-37
+
+; temporals (RFC 3339 productions, "T" separator only) ----------------------
+
+temporal        = date-time / full-date / partial-time
+full-date       = 4DIGIT "-" 2DIGIT "-" 2DIGIT
+partial-time    = 2DIGIT ":" 2DIGIT ":" 2DIGIT ["." 1*DIGIT]
+time-offset     = %s"Z" / (("+" / "-") 2DIGIT ":" 2DIGIT)
+date-time       = full-date %s"T" partial-time [time-offset]
+                  ; absent offset: a local date-time
+; The field ranges (month, day by month and leap year, hour, minute, second up
+; to 60, offset) cannot be written in ABNF; spec 4.6 states them (XFER0305).
+; A temporal takes no sign: "-2025-08-01" is an integer and a separation error.
+
+; keywords, symbols, identifiers --------------------------------------------
+
+keyword         = %s"true" / %s"false" / %s"null" / %s"inf" / %s"nan"
+                  ; "-inf" is lexed under special-float
+symbol          = identifier                              ; C3: not a keyword
+identifier      = id-start *id-continue
+                  ; may not end with "."
+id-start        = ALPHA / "_" / non-ascii
+id-continue     = ALPHA / DIGIT / "_" / "-" / "." / non-ascii
+non-ascii       = <any scalar value in %x80-10FFFF except excluded>
+excluded        = %xA0 / %x1680 / %x2000-200A / %x2028 / %x2029 / %x202F
+                / %x205F / %x3000 / %xFEFF                ; Unicode spaces
+                / %x200B-200F / %x202A-202E / %x2060-2064 / %x2066-2069
+                                                          ; format and bidi controls
+
+; core rules (RFC 5234 appendix B) used above: ALPHA DIGIT HEXDIG BIT DQUOTE
+; SP HTAB LF
+```
