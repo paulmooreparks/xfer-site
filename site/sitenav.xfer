@@ -8,6 +8,7 @@
     slug "home"
     title "XferLang"
     url "/home"
+    icon "/images/logo.png"
     description "XferLang: a data format with no escape sequences, typed values and no meaning in line breaks."
     nav [
         {
