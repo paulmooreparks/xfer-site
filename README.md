@@ -12,7 +12,7 @@ The plan for the site is `spec/history/XFER_SITE_DESIGN.md`, and its decisions a
 
 | Path | Holds |
 |---|---|
-| `site/` | The site's own tree, mounted into the container: `sitenav.xfer`, `content/`, `books/`, `applets/`, `images/`. |
+| `site/` | The site's web root, mounted read-only into the container: `sitenav.xfer`, `content/` (pages, and books as a main page with a folder of chapters), `applets/`, `images/`. The engine's own scripts, styles and PUDL show through from its image. |
 | `tools/` | Scripts that build parts of `site/` from the specification, such as the page for each diagnostic code. Their output is committed, so the container needs nothing but `site/`. |
 | `spec/` | The specification and conformance suite, as a submodule. |
 

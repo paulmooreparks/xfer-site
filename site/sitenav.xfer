@@ -1,0 +1,19 @@
+<! xfer 1 !>
+</ The navigation of xfer.parkscomputing.com, read by the parkscomputing engine
+   (its sitenav.xfer for parkscomputing.com shows the full set of keys). Books,
+   such as the diagnostic codes, are listed by their main page only; their
+   chapters belong to the book. The site's own applets need no entry here: the
+   engine lists them from applets/. />
+{
+    slug "home"
+    title "XferLang"
+    url "/home"
+    description "XferLang: a data format with no escape sequences, typed values and no meaning in line breaks."
+    nav [
+        {
+            slug "diag"
+            title "Diagnostic codes"
+            description "Every diagnostic an XferLang implementation reports, with an example and the fix"
+        }
+    ]
+}

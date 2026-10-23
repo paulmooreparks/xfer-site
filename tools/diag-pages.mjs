@@ -1,5 +1,7 @@
-// Writes the page for each diagnostic code, site/content/diag-XFERnnnn.md, and the index of them,
-// site/content/diag.md, from three sources so that no page can disagree with the language:
+// Writes the diagnostic codes as a book: site/content/diag.md is its main page and index, with
+// `chapters: diag`, and site/content/diag/XFERnnnn.md is the chapter for each code, served at
+// /page/diag/XFERnnnn (the engine's books, parkscomputing Architecture/books-design.md). The pages
+// come from three sources so that no page can disagree with the language:
 //
 //   spec/spec/xferlang.md       each code's severity and summary (section 10), and the headings
 //                               of the sections the pages link to
@@ -10,7 +12,7 @@
 //
 //   npm run diag
 
-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { canonical, fromJson, parse, toJson } from "xferlang";
 
 const root = new URL("../", import.meta.url);
@@ -175,7 +177,10 @@ function render(example, code) {
 const fence = (lang, text) => `\`\`\`${lang}\n${text.endsWith("\n") ? text : `${text}\n`}\`\`\``;
 const severityWord = { error: "Error", warning: "Warning", informational: "Informational" };
 
-function page({ code, severity, summary }) {
+/** A code's address on the site, which the Editor's lint marks link to. */
+const pageUrl = (code) => `/page/diag/${code}`;
+
+function page({ code, severity, summary }, order) {
   const note = notes.get(code);
   const section = sections.get(note.section);
   if (!section) {
@@ -187,6 +192,7 @@ function page({ code, severity, summary }) {
     "---",
     `title: "${code}: ${summary.replaceAll('"', "'")}"`,
     `description: "${severityWord[severity]}: ${summary.replaceAll('"', "'")}."`,
+    `order: ${order}`,
     `date: ${DATE}`,
     `lastModified: ${DATE}`,
     "lang: en-us",
@@ -216,18 +222,24 @@ function page({ code, severity, summary }) {
     }
     parts.push("");
   }
-  parts.push("[All diagnostic codes](/diag)", "");
+  parts.push("[All diagnostic codes](/page/diag)", "");
   return parts.join("\n");
 }
 
-for (const entry of codes) {
-  writeFileSync(new URL(`site/content/diag-${entry.code}.md`, root), page(entry));
-}
+// The chapters' folder is the generator's alone, so it is rebuilt whole and a code removed from
+// the specification leaves no page behind.
+const chapters = new URL("site/content/diag/", root);
+rmSync(chapters, { recursive: true, force: true });
+mkdirSync(chapters, { recursive: true });
+codes.forEach((entry, i) => {
+  writeFileSync(new URL(`${entry.code}.md`, chapters), page(entry, i + 1));
+});
 
 const index = [
   "---",
   'title: "Diagnostic codes"',
   `description: "Every diagnostic an XferLang implementation reports, by code."`,
+  "chapters: diag",
   `date: ${DATE}`,
   `lastModified: ${DATE}`,
   "lang: en-us",
@@ -238,7 +250,7 @@ const index = [
   "",
   "| Code | Severity | Meaning |",
   "|---|---|---|",
-  ...codes.map((c) => `| [${c.code}](/diag/${c.code}) | ${c.severity} | ${c.summary} |`),
+  ...codes.map((c) => `| [${c.code}](${pageUrl(c.code)}) | ${c.severity} | ${c.summary} |`),
   "",
 ].join("\n");
 writeFileSync(new URL("site/content/diag.md", root), index);
