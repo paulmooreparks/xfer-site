@@ -33,15 +33,26 @@ if (codes.length < 40) {
   throw new Error(`found only ${codes.length} codes in the specification's table`);
 }
 
-// Section number to heading, and its anchor as GitHub writes it.
+// Section number to its title and its address in the specification book (tools/spec-book.mjs,
+// which names a chapter for its top-level heading's words and gives headings GitHub-style ids).
 const sections = new Map();
+let chapterFile = "";
 for (const m of spec.matchAll(/^#{2,3} ((\d+)(\.\d+)?)\.? (.+)$/gm)) {
-  const heading = `${m[1]}${m[3] ? "" : "."} ${m[4]}`;
-  const anchor = heading
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N} -]/gu, "")
-    .replace(/ /g, "-");
-  sections.set(m[1], { title: m[4], anchor });
+  if (!m[3]) {
+    chapterFile = m[4]
+      .replace(/\(.*?\)/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9 ]/g, "")
+      .trim()
+      .replace(/ +/g, "-");
+    sections.set(m[1], { title: m[4], url: `/page/spec/${chapterFile}` });
+  } else {
+    const anchor = `${m[1]} ${m[4]}`
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N} -]/gu, "")
+      .replace(/ /g, "-");
+    sections.set(m[1], { title: m[4], url: `/page/spec/${chapterFile}#${anchor}` });
+  }
 }
 
 // ---- The hand-written part, in XferLang ----
@@ -212,7 +223,7 @@ function page({ code, severity, summary }, order) {
     parts.push("## An example", "", fence("xfer", note.example), "", note.exampleNote ?? "", "");
   }
   parts.push("## How to fix it", "", note.fix, "", "## In the specification", "");
-  parts.push(`Section ${note.section}, [${section.title}](${SPEC_URL}/spec/xferlang.md#${section.anchor}), of the specification at \`${SPEC_TAG}\`.`, "");
+  parts.push(`Section ${note.section}, [${section.title}](${section.url}), of the [specification](/page/spec) at \`${SPEC_TAG}\`.`, "");
   if (found.length > 0) {
     const ids = [...new Set(found.map((e) => e.id))].sort();
     parts.push("## Conformance cases", "", `The suite's cases that expect ${code}:`, "");

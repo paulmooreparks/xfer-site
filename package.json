@@ -4,7 +4,8 @@
   "type": "module",
   "description": "Scripts that build parts of site/ from the specification. Not published.",
   "scripts": {
-    "diag": "node tools/diag-pages.mjs"
+    "diag": "node tools/diag-pages.mjs",
+    "spec": "node tools/spec-book.mjs"
   },
   "devDependencies": {
     "xferlang": "0.1.0-next.4"

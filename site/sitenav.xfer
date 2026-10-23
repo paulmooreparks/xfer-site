@@ -12,6 +12,11 @@
     description "XferLang: a data format with no escape sequences, typed values and no meaning in line breaks."
     nav [
         {
+            slug "spec"
+            title "Specification"
+            description "The XferLang specification, the contract every implementation is tested against"
+        }
+        {
             slug "diag"
             title "Diagnostic codes"
             description "Every diagnostic an XferLang implementation reports, with an example and the fix"
